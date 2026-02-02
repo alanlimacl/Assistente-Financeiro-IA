@@ -7,21 +7,18 @@ from agente_agno import agente_financeiro
 # FastAPI
 app = FastAPI(title='Agente Financeiro IA', description='Agente de IA para ajuda Financeira Pessoal')
 
-class DadosUsuario(BaseModel):
-    question: str = Field(min_length=10, 
-                          max_length=250 , 
-                          examples= ["Hoje eu comprei um sapato por 59,00 reais, paguei no Cartão de Crédito Nubank"], 
-                          description="Usuário informa o gasto dele e descreve com informações") 
+class RequisicaoUsuario(BaseModel):
+    text: str
 
 @app.get("/")
 def read_root():
     return {'status':'online', 'mensagem': 'API do Agente Financeiro rodando!'}
 
 
-@app.post("/agente_financeiro")
-def agente_financeiro_api(descreva:DadosUsuario):
-    mensagem = agente_financeiro(descreva)
-    return {"mensagens": mensagem}
+@app.post("/perguntar")
+def endpoint_perguntar(pergunta: RequisicaoUsuario):
+    mensagem_ia = agente_financeiro(pergunta.text)
+    return {"text": mensagem_ia}
 
 
 if __name__ == "__main__":

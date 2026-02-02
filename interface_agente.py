@@ -3,6 +3,7 @@ import sqlite3
 import os
 import pandas as pd
 from agente_agno import agente_financeiro
+import requests
 from datetime import datetime
 import plotly.express as px
 from utils import MESES_PT
@@ -29,7 +30,7 @@ with st.sidebar:
     
 
 if pagina == 'Chatbot':
-    st.write("Pergunte sobre gastos, categorias ou períodos. Estou aqui pra te ajudar a entender para onde seu dinheiro está indo.")
+    st.write("Informe seus gastos e categorize. Estou aqui pra te ajudar a entender para onde seu dinheiro está indo.")
     
     if 'messages' not in st.session_state:
         st.session_state.messages = []
@@ -41,11 +42,28 @@ if pagina == 'Chatbot':
         st.session_state.messages.append({'role': 'user', 'content': prompt})
         st.chat_message('user').write(prompt)
         
-        resposta = agente_financeiro(prompt)
-        st.session_state.messages.append({'role': 'assistent', 'content': resposta})
-        st.chat_message('assistant').write(resposta)
-    
-    
+        with st.spinner('O agente está pensando...'):
+            try:
+                resposta = requests.post(
+                    'http://localhost:8000/perguntar',
+                    json={'text':prompt}
+                )
+                
+                if resposta.status_code == 200:
+                    dados = resposta.json()
+                    resposta_ia = dados['text']
+                    # st.success('Reposta recebida')
+                    st.session_state.messages.append({'role': 'assistent', 'content': resposta})
+                    st.chat_message('assistant').write(resposta_ia)
+                    
+                else:
+                    st.error('Erro no servidor da API')
+                    
+            except Exception as e:
+                st.error(f'Falha na conexão: {e}')
+                
+            
+        
     
 elif pagina == 'Resumo':
     st.write('Aqui você encontra um resumo dos gastos por categoria para visualizar melhor seus hábitos financeiros.')
@@ -100,7 +118,7 @@ elif pagina == 'Gastos por Categoria':
         
         coluna_data = banco_dados.columns[5]
         
-        banco_dados[coluna_data] = pd.to_datetime(banco_dados[coluna_data], dayfirst=True)
+        banco_dados[coluna_data] = pd.to_datetime(banco_dados[coluna_data]) # dayfirst=True
         banco_dados['mes_ano'] = banco_dados[coluna_data].dt.to_period('M')
         
         meses = sorted(banco_dados['mes_ano'].unique(), reverse=True)
