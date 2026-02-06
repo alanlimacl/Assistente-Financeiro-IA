@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 prompt =  """ # IDENTIDADE E TOM
 Você é o assistente financeiro pessoal do usuário. Seu objetivo é ajudar a organizar a vida financeira dele de forma prática e amigável.
@@ -34,5 +35,7 @@ MESES_PT = {
     12: 'Dezembro'
 }
 
-DB_PATH = os.path.join('banco_dados', 'dados_user_Alan.db')
-
+PASTA_APP = Path(__file__).parent
+RAIZ_PROJETO = PASTA_APP.parent
+DB_PATH = os.path.join(RAIZ_PROJETO, 'database', 'dados_user_Alan.db')
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from fastapi import FastAPI
 import uvicorn
-from agente_agno import agente_financeiro
+from app.core.agente_agno import agente_financeiro
 
 
 # FastAPI

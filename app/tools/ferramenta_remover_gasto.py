@@ -1,4 +1,4 @@
-from utils import DB_PATH
+from app.utils import DB_PATH
 import sqlite3
 
 def remover_gastos(id_gasto: int):
@@ -25,8 +25,8 @@ def remover_gastos(id_gasto: int):
         conexao.commit()
         conexao.close()
 
-        return f'Sucesso: O gasto com ID {id} foi removido com sucesso.'
+        return f'Sucesso: O gasto com ID {id_gasto} foi removido com sucesso.'
     
     except sqlite3.OperationalError as e:
-        return(f'Erro ao remover dado: {id} :{e}')
+        return(f'Erro ao remover dado: {id_gasto} :{e}')
     

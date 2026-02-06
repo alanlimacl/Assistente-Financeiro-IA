@@ -2,11 +2,12 @@ import streamlit as st
 import sqlite3
 import os
 import pandas as pd
-from agente_agno import agente_financeiro
 import requests
-from datetime import datetime
 import plotly.express as px
-from utils import MESES_PT
+
+from datetime import datetime
+from app.utils import MESES_PT
+
 
 st.set_page_config(page_title="Agente Financeiro IA", page_icon="💰", layout='wide')
 

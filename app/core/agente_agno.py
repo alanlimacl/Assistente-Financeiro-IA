@@ -4,8 +4,9 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
 from agno.os import AgentOS
 
-from ferramentas import consultar_gastos, adicionar_gastos, remover_gastos
-from utils import prompt
+from app.tools import consultar_gastos, adicionar_gastos, remover_gastos
+from app.utils import prompt
+
 import getpass
 import socket
 
@@ -15,13 +16,11 @@ nome_usuario_pc = f'{usuario_os}@{nome_pc}'
 
 load_dotenv()
 
+modelo = OpenAIChat(id="gpt-5-mini")
+
+banco_dados = SqliteDb(id='agente_financeiro', db_file=f'banco_dados/dados_user_{usuario_os}.db')
 
 def agente_financeiro(input:str):
-
-    modelo = OpenAIChat(id="gpt-5-mini")
-
-    banco_dados = SqliteDb(id='agente_financeiro', db_file=f'banco_dados/dados_user_{usuario_os}.db')
-
     agente = Agent(model=modelo,
                 name='Agente Financeiro',
                 user_id=nome_usuario_pc,
@@ -41,16 +40,4 @@ def agente_financeiro(input:str):
     
     print(mensagem_resposta)
     return mensagem_resposta
-
-
-if __name__ == '__main__':    
-    while True:
-        pergunta = input('Você: ')
-        
-        if pergunta.lower().strip() == 'sair':
-            break
-        
-        agente_financeiro(pergunta)
-    
-# return mensagem
 
