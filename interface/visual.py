@@ -1,20 +1,20 @@
 import streamlit as st
 import sqlite3
-import os
 import pandas as pd
 import requests
 import plotly.express as px
+from app.config import BANCO_DADOS
 
 from datetime import datetime
-from app.utils import MESES_PT
+
+from app.uteis.formatadores import MESES_PT
 
 
 st.set_page_config(page_title="Agente Financeiro IA", page_icon="💰", layout='wide')
 
 def init_bd():
-    BD_PATH = os.path.join('banco_dados','dados_user_Alan.db')
 
-    conexao = sqlite3.connect(BD_PATH)
+    conexao = sqlite3.connect(BANCO_DADOS)
     banco_dados = pd.read_sql_query("SELECT * FROM controle_financeiro", conexao)
     conexao.close()
 
@@ -54,7 +54,7 @@ if pagina == 'Chatbot':
                     dados = resposta.json()
                     resposta_ia = dados['text']
                     # st.success('Reposta recebida')
-                    st.session_state.messages.append({'role': 'assistent', 'content': resposta})
+                    st.session_state.messages.append({'role': 'assistant', 'content': resposta_ia})
                     st.chat_message('assistant').write(resposta_ia)
                     
                 else:
@@ -67,6 +67,8 @@ if pagina == 'Chatbot':
         
     
 elif pagina == 'Resumo':
+    
+    # Criação da Aba Resumo com os Gráficos
     st.write('Aqui você encontra um resumo dos gastos por categoria para visualizar melhor seus hábitos financeiros.')
     
     if not banco_dados.empty:
@@ -86,6 +88,7 @@ elif pagina == 'Resumo':
         
         try:
             indice_padrao = meses.index(mes_atual)
+            
         except ValueError:
             indice_padrao = 0
         
@@ -104,13 +107,47 @@ elif pagina == 'Resumo':
         coluna3.metric('Maior Gasto', f'R$ {maior_gasto:,.2f}')
 
         st.markdown('---')
+        
+        banco_dados_grafico = banco_dados_filtrado.sort_values(coluna_data).copy()
+        banco_dados_grafico['Data'] = banco_dados_grafico[coluna_data].dt.strftime('%d/%m/%Y')
+        banco_dados_grafico = banco_dados_grafico.rename(columns={'valor': 'Valor'})
+
+        # 2. Criamos o gráfico usando a nova coluna de texto
         fig_hist = px.bar(
-            banco_dados_filtrado.sort_values(coluna_data),
-            x=coluna_data,
-            y='valor',
-            title=f'Evolução Diária em {mes_selecionado}')
+            banco_dados_grafico,
+            x='Data',  # Usamos a string em vez do datetime puro
+            y='Valor',
+            title=f'Evolução Diária em {mes_selecionado}'
+        )
+        
+        # 3. Forçamos o Plotly a tratar o Eixo X como Categoria (desliga a "régua de tempo")
+        fig_hist.update_xaxes(type='category')
+        
         st.plotly_chart(fig_hist, width='stretch')
         
+    # Criação da Lista de Gastos da Aba Resumo
+    st.markdown('---')
+    st.subheader(f'Detalhes dos Gastos - {mes_selecionado}')
+    
+    tabela_exibicao = banco_dados_filtrado.copy()
+    
+    colunas_amostra = {
+        coluna_data: 'Data',
+        'item': 'Item',
+        'categoria': 'Categoria',
+        'metodo_pagamento': 'Forma de Pagamento',
+        'valor': 'Valor (R$)'
+    }
+    
+    tabela_exibicao = tabela_exibicao[list(colunas_amostra.keys())] # Filtrando apenas colunas do dicionário
+    tabela_exibicao = tabela_exibicao.rename(columns=colunas_amostra) # Renomeando os nomes das colunas
+    
+    tabela_exibicao['Data'] = pd.to_datetime(tabela_exibicao['Data']).dt.strftime('%d/%m/%Y')
+    
+    tabela_exibicao = tabela_exibicao.iloc[::-1]
+    
+    st.dataframe(tabela_exibicao, hide_index=True, use_container_width=True) # Esconde a coluna de indices (0, 1, 2) e Ocupar a tela toda
+    
         
 elif pagina == 'Gastos por Categoria':
     st.write('Aqui você encontra um resumo dos gastos por categoria para visualizar melhor seus hábitos financeiros')
