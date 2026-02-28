@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.utils import DB_PATH
+from app.config import BANCO_DADOS
 import sqlite3
 import os
 
@@ -16,12 +16,11 @@ def adicionar_gastos(
         data_atual = datetime.now().strftime("%Y-%m-%d")
         data = data_atual
         
-        
     # Verificar a CONEXÃO com o Banco de Dados SQL
     try:
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        os.makedirs(os.path.dirname(BANCO_DADOS), exist_ok=True)
         
-        conexao = sqlite3.connect(DB_PATH)
+        conexao = sqlite3.connect(BANCO_DADOS)
         cursor = conexao.cursor()
 
     except sqlite3.OperationalError as e:
@@ -30,20 +29,11 @@ def adicionar_gastos(
     
     # Verificar a execução do COMANDO SQL
     try:
-        
-        cursor.execute("""CREATE TABLE IF NOT EXISTS controle_financeiro (
-            id_gasto INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            item TEXT NOT NULL,
-            valor FLOAT NOT NULL,
-            categoria TEXT NOT NULL,
-            metodo_pagamento TEXT NOT NULL,
-            data TEXT NOT NULL)""")
-        
-        sql = """INSERT INTO controle_financeiro 
+        query = """INSERT INTO controle_financeiro 
                  (item, valor, categoria, metodo_pagamento, data) 
                  VALUES (?, ?, ?, ?, ?)"""
                  
-        cursor.execute(sql, (item, valor, categoria, metodo_pagamento, data))
+        cursor.execute(query, (item, valor, categoria, metodo_pagamento, data))
     
         conexao.commit()
         conexao.close()

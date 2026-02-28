@@ -1,14 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from fastapi import FastAPI
 import uvicorn
-from app.core.agente_agno import agente_financeiro
+from app.agente_agno.agente import pergunta_agente
 
 
-# FastAPI
 app = FastAPI(title='Agente Financeiro IA', description='Agente de IA para ajuda Financeira Pessoal')
 
 class RequisicaoUsuario(BaseModel):
     text: str
+
 
 @app.get("/")
 def read_root():
@@ -17,7 +17,7 @@ def read_root():
 
 @app.post("/perguntar")
 def endpoint_perguntar(pergunta: RequisicaoUsuario):
-    mensagem_ia = agente_financeiro(pergunta.text)
+    mensagem_ia = pergunta_agente(pergunta.text)
     return {"text": mensagem_ia}
 
 

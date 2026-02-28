@@ -1,4 +1,4 @@
-from app.utils import DB_PATH
+from app.config import BANCO_DADOS
 import sqlite3
 
 def remover_gastos(id_gasto: int):
@@ -7,7 +7,7 @@ def remover_gastos(id_gasto: int):
 
     try:
         # Verificar a CONEXÃO com o Banco de Dados
-        conexao = sqlite3.connect(DB_PATH)
+        conexao = sqlite3.connect(BANCO_DADOS)
         cursor = conexao.cursor()
     
     except sqlite3.OperationalError as e:
