@@ -8,7 +8,8 @@ wheels/
 .python-version
 pyproject.toml
 uv.lock
-
+banco.db
+banco_padrao.db
 
 # Virtual environments
 .venv

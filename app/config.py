@@ -10,8 +10,8 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 MODELO_IA = os.getenv('MODELO_IA')
 
 BASE_ARQUIVO = Path(__file__).resolve().parent.parent
-BD_NOME = os.getenv('NOME_BANCO_DADOS')
 BD_PASTA = BASE_ARQUIVO / 'banco_dados'
+BD_NOME = os.getenv('NOME_BANCO_DADOS')
 BANCO_DADOS = BD_PASTA / BD_NOME
 
 os.makedirs(BD_PASTA, exist_ok=True)
