@@ -20,7 +20,6 @@ def logout(cookie_controller):
 
 def exibir_dashboard(cookie_controller):
     """Renderiza a interface principal do assistente financeiro."""
-    # st.header("Agente Financeiro IA")
 
     with st.sidebar:
         # Saudação e botão de Sair
