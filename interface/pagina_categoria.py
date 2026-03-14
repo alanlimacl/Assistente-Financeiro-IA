@@ -10,14 +10,14 @@ URL = "http://localhost:8000"
 
 def buscar_dados_financas():
     """Busca todo o histórico de gastos do usuário logado na API."""
-    access_token = st.session_state.get('access_access_token')
+    access_token = st.session_state.get('access_token')
     
     if not access_token:
         st.warning("Você precisa fazer login para ver as categorias.")
         return pd.DataFrame()
 
     headers = {'Authorization': f'Bearer {access_token}'}
-    params = {'data_inicio': '2000-01-01', 'data_final': '2100-12-31'}
+    params = {'data_inicio': '2026-01-01', 'data_final': '2026-12-31'}
 
     try:
         resposta = requests.get(f"{URL}/financas/consultar-gasto", headers=headers, params=params)
@@ -31,7 +31,8 @@ def buscar_dados_financas():
         return pd.DataFrame()
 
 def grafico_categoria():
-    st.write('Aqui você encontra um resumo dos gastos por categoria para visualizar melhor seus hábitos financeiros.')
+    st.header('Seus Gastos por Categoria')
+    st.write('Aqui você encontra um gráfico dos gastos por categoria para visualizar melhor seus hábitos financeiros.')
     
     banco_dados = buscar_dados_financas()
     
@@ -64,6 +65,6 @@ def grafico_categoria():
         fig_pie = px.pie(dados_pizza, values='valor', names='categoria', hole=0.3, title=f"Divisão de Gastos - {mes_selecionado}")
         
         # Ajustei o width='stretch' para use_container_width=True que é o padrão atual do Streamlit
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
     else:
         st.info("Nenhum gasto encontrado para gerar o gráfico de categorias.")

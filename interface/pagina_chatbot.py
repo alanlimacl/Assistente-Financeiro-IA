@@ -5,7 +5,7 @@ URL = "http://localhost:8000"
 
 def renovar_token_silenciosamente() -> bool:
     """Bate na rota do FastAPI com o refresh_token e atualiza a chave de acesso."""
-    refresh_token = st.session_state.get('refres_token')
+    refresh_token = st.session_state.get('refresh_token')
 
     if not refresh_token:
         return False
