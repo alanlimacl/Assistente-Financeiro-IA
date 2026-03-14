@@ -2,16 +2,61 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 from datetime import datetime
+import requests
 
 from app.uteis.formatadores import MESES_PT
 
+URL = "http://localhost:8000"
 
-def grafico_resumo(banco_dados):
-    st.write('Aqui você encontra um resumo dos gastos por categoria para visualizar melhor seus hábitos financeiros.')
+def buscar_dados_financas():
+    """Busca todo o histórico de gastos do usuário logado na API."""
+    access_token = st.session_state.get('access_token')
+    
+    if not access_token:
+        st.warning("Você precisa fazer login para ver o resumo.")
+        return pd.DataFrame()
+
+    headers = {'Authorization': f'Bearer {access_token}'}
+    
+    # Colocamos um período amplo para o banco trazer tudo
+    params = {
+        'data_inicio': '2000-01-01', 
+        'data_final': '2100-12-31'
+    }
+
+    try:
+        resposta = requests.get(f"{URL}/financas/consultar-gasto", headers=headers, params=params)
+        
+        if resposta.status_code == 200:
+            dados = resposta.json()
+            lista_gastos = dados.get('gastos', [])
+            
+            return pd.DataFrame(lista_gastos)
+            
+        elif resposta.status_code == 404:
+            return pd.DataFrame() # Retorna vazio se não tiver gastos ainda
+            
+        else:
+            st.error("Erro ao carregar os dados do servidor.")
+            return pd.DataFrame()
+            
+    except Exception as e:
+        st.error(f"Falha na conexão com a API: {e}")
+        return pd.DataFrame()
+
+
+# ATENÇÃO: Removemos o parâmetro (banco_dados) daqui!
+def grafico_resumo():
+    
+    st.header('Resumo dos seus Gastos')
+    st.write('Aqui você encontra um resumo dos gastos para visualizar melhor seus hábitos financeiros.')
+
+    # O Pandas cria a tabela a partir do JSON da API perfeitamente!
+    banco_dados = buscar_dados_financas()
 
     if not banco_dados.empty:
-        
-        coluna_data = banco_dados.columns[5]
+        # Puxando pelo nome exato da chave que vem da API
+        coluna_data = 'data' 
         
         banco_dados[coluna_data] = pd.to_datetime(banco_dados[coluna_data])
         banco_dados['mes_ano'] = banco_dados[coluna_data].dt.to_period('M')
@@ -26,11 +71,10 @@ def grafico_resumo(banco_dados):
         
         try:
             indice_padrao = meses.index(mes_atual)
-            
         except ValueError:
             indice_padrao = 0
         
-        mes_selecionado = st.sidebar.selectbox('Selecione o Mês:',options=list(meses_label.keys()), format_func= lambda x: meses_label[x])
+        mes_selecionado = st.sidebar.selectbox('Selecione o Mês:', options=list(meses_label.keys()), format_func=lambda x: meses_label[x])
         
         banco_dados_filtrado = banco_dados[banco_dados['mes_ano'] == mes_selecionado]
         
@@ -50,39 +94,36 @@ def grafico_resumo(banco_dados):
         banco_dados_grafico['Data'] = banco_dados_grafico[coluna_data].dt.strftime('%d/%m/%Y')
         banco_dados_grafico = banco_dados_grafico.rename(columns={'valor': 'Valor'})
 
-        # 2. Criamos o gráfico usando a nova coluna de texto
         fig_hist = px.bar(
             banco_dados_grafico,
-            x='Data',  # Usamos a string em vez do datetime puro
+            x='Data', 
             y='Valor',
             title=f'Evolução Diária em {mes_selecionado}'
         )
         
-        # 3. Forçamos o Plotly a tratar o Eixo X como Categoria (desliga a "régua de tempo")
         fig_hist.update_xaxes(type='category')
-        
         st.plotly_chart(fig_hist, width='stretch')
         
-    # Criação da Lista de Gastos da Aba Resumo
-    st.markdown('---')
-    st.subheader(f'Detalhes dos Gastos - {mes_selecionado}')
-    
-    tabela_exibicao = banco_dados_filtrado.copy()
-    
-    colunas_amostra = {
-        coluna_data: 'Data',
-        'item': 'Item',
-        'categoria': 'Categoria',
-        'metodo_pagamento': 'Forma de Pagamento',
-        'valor': 'Valor (R$)'
-    }
-    
-    tabela_exibicao = tabela_exibicao[list(colunas_amostra.keys())] # Filtrando apenas colunas do dicionário
-    tabela_exibicao = tabela_exibicao.rename(columns=colunas_amostra) # Renomeando os nomes das colunas
-    
-    tabela_exibicao['Data'] = pd.to_datetime(tabela_exibicao['Data']).dt.strftime('%d/%m/%Y')
-    
-    tabela_exibicao = tabela_exibicao.iloc[::-1]
-    
-    st.dataframe(tabela_exibicao, hide_index=True, use_container_width=True) # Esconde a coluna de indices (0, 1, 2) e Ocupar a tela toda
-    
+        # Criação da Lista de Gastos
+        st.markdown('---')
+        st.subheader(f'Detalhes dos Gastos - {mes_selecionado}')
+        
+        tabela_exibicao = banco_dados_filtrado.copy()
+        
+        colunas_amostra = {
+            coluna_data: 'Data',
+            'item': 'Item',
+            'categoria': 'Categoria',
+            'metodo_pagamento': 'Forma de Pagamento',
+            'valor': 'Valor (R$)'
+        }
+        
+        tabela_exibicao = tabela_exibicao[list(colunas_amostra.keys())] 
+        tabela_exibicao = tabela_exibicao.rename(columns=colunas_amostra) 
+        
+        tabela_exibicao['Data'] = pd.to_datetime(tabela_exibicao['Data']).dt.strftime('%d/%m/%Y')
+        tabela_exibicao = tabela_exibicao.iloc[::-1]
+        
+        st.dataframe(tabela_exibicao, hide_index=True, use_container_width=True) 
+    else:
+        st.info("Nenhum gasto encontrado no seu histórico. Fale com o seu Assistente para adicionar!")

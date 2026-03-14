@@ -28,6 +28,10 @@ class LoginEsquema(BaseModel):
     
     class Configuracao:
         from_attributes = True
+        
+
+class RequisicaoRefreshTokenEsquema(BaseModel):
+    refresh_token : str
 
 
         

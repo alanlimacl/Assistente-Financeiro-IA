@@ -7,7 +7,9 @@ from app.roteador_api.modelos import Financas, Usuario
 from app.roteador_api.dependencias import checar_token
 from app.roteador_api.config import oauth2_esquema
 
+
 financas_roteador = APIRouter(prefix='/financas', tags=['Financas'], dependencies=[Depends(checar_token)])
+
 
 @financas_roteador.post("/adicionar-gasto")
 async def adicionar_gasto(financa_esquema: FinancasEsquema, 
@@ -33,7 +35,8 @@ async def adicionar_gasto(financa_esquema: FinancasEsquema,
 async def consultar_gasto(data_inicio: str, data_final: str, 
                           categoria: str = None,
                           usuario: Usuario = Depends(checar_token), 
-                          sessao: Session = Depends(pegar_sessao_bd)):
+                          sessao: Session = Depends(pegar_sessao_bd),
+                          ):
     
     consulta = sessao.query(Financas).filter(Financas.id_usuario == usuario.id)
     
@@ -44,10 +47,14 @@ async def consultar_gasto(data_inicio: str, data_final: str,
     
     gastos_usuario = consulta.all()
     
+    if not gastos_usuario:
+        raise HTTPException(status_code=404, detail='Não foi encontrado gasto registrado pelo usuário.')    
+        
     lista_gastos = []
     
     for gasto in gastos_usuario:
-        lista_gastos.append({'valor': gasto.valor,
+        lista_gastos.append({'id': gasto.id,
+                            'valor': gasto.valor,
                              'item': gasto.item,
                              'categoria': gasto.categoria,
                              'metodo_pagamento':gasto.metodo_pagamento,
@@ -57,4 +64,23 @@ async def consultar_gasto(data_inicio: str, data_final: str,
     return {'total_gastos': sum(gasto.valor for gasto in gastos_usuario),
             'quantidade': len(gastos_usuario),
             'gastos':lista_gastos}
+
+
+@financas_roteador.delete("/remover-gasto")
+async def remover_gasto(id_gasto: int,
+                        usuario: Usuario = Depends(checar_token),
+                        sessao: Session = Depends(pegar_sessao_bd)):
     
+    gasto_para_remover = sessao.query(Financas).filter(Financas.id == id_gasto).first()
+    
+    if not gasto_para_remover:
+        raise HTTPException(status_code=404, detail='Gasto não localizado.')
+        
+    if not gasto_para_remover.id_usuario == usuario.id:
+        raise HTTPException(status_code=401, detail='Você não tem permissão para realizar essa operação.')
+    
+    sessao.delete(gasto_para_remover)
+    sessao.commit()
+    
+    return {'mensagem': f'Gasto do ID: {gasto_para_remover.id} removido com sucesso.',
+            'informacao': gasto_para_remover}

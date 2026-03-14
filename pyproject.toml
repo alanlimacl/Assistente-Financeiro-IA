@@ -22,5 +22,6 @@ dependencies = [
     "python-jose>=3.5.0",
     "sqlalchemy>=2.0.45",
     "streamlit>=1.53.1",
+    "streamlit-cookies-controller>=0.0.4",
     "uvicorn>=0.40.0",
 ]
