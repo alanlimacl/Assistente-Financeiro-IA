@@ -23,7 +23,7 @@ class Financas(Base):
     id = Column('id', Integer, primary_key=True, autoincrement=True)
     valor = Column('valor', Numeric(10, 2), nullable=False)
     item = Column('item', String, nullable=False)
-    categoria = Column('categoria', String, nullable=True)
+    categoria = Column('categoria', String, nullable=False)
     metodo_pagamento = Column('metodo_pagamento', String, nullable=False)
     data = Column('data', String, nullable=False)
     id_usuario = Column('id_usuario', ForeignKey('usuario.id'))
@@ -35,3 +35,13 @@ class Financas(Base):
         self.metodo_pagamento = metodo_pagamento
         self.data = data 
         self.id_usuario = id_usuario
+
+
+class MetaGastos(Base):
+    __tablename__ = 'meta_gastos'
+    
+    id = Column('id', Integer, primary_key=True, autoincrement=True)
+    valor = Column('valor', Numeric(10, 2), nullable=False)
+    categoria = Column('categoria', String, nullable=False)
+    data_mes = Column('data_mes', String, nullable=False)
+    id_usuario = Column('id_usuario', ForeignKey('usuario.id'))
