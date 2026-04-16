@@ -124,6 +124,6 @@ def grafico_resumo():
         tabela_exibicao['Data'] = pd.to_datetime(tabela_exibicao['Data']).dt.strftime('%d/%m/%Y')
         tabela_exibicao = tabela_exibicao.iloc[::-1]
         
-        st.dataframe(tabela_exibicao, hide_index=True, use_container_width=True) 
+        st.dataframe(tabela_exibicao, hide_index=True, width='stretch') 
     else:
         st.info("Nenhum gasto encontrado no seu histórico. Fale com o seu Assistente para adicionar!")
