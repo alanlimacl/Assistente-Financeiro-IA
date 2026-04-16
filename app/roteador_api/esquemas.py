@@ -22,6 +22,15 @@ class FinancasEsquema(BaseModel):
         from_attributes = True
 
 
+class MetaGastosEsquema(BaseModel):
+    valor: float 
+    categoria: str
+    data_mes: str
+    
+    class Configuracao:
+        from_attributes = True
+
+
 class LoginEsquema(BaseModel):
     email: str
     senha: str

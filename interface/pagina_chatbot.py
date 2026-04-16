@@ -95,37 +95,3 @@ def chat_bot():
                 except Exception as e:
                     st.error(f"Falha na conexão: {e}")
                     
-                    
-                    
-                # resposta_completa = ''
-                
-                # try:
-                    
-                #     token = st.session_state.get('token')
-                    
-                #     headers_seguranca = {
-                #         'Authorization': f'Bearer {token}'
-                #     }
-                    
-                #     resposta = requests.post(
-                #         'http://localhost:8000/agente/perguntar',
-                #         json={'text':prompt},
-                #         headers=headers_seguranca,
-                #         stream=True
-                #     )
-                    
-                #     if resposta.status_code == 401:
-                #         placeholder.write('Opa, parece que sua sessão expirou! Tente fazer login novamente.')
-                    
-                    
-                #     for chunk in resposta.iter_content(chunk_size=None):
-                #         if chunk:
-                #             texto = chunk.decode('utf-8')
-                #             resposta_completa += texto
-                            
-                #             placeholder.write(resposta_completa)
-                            
-                #     st.session_state.messages.append({'role': 'assistant', 'content': resposta_completa})
-                    
-                # except Exception as e:
-                #     st.error(f'Falha na conexão: {e}')

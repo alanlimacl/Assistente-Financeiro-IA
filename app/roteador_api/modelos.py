@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, Numeric, ForeignKey
+from sqlalchemy import Column, String, Integer, Boolean, Numeric, ForeignKey, UniqueConstraint
 from app.roteador_api.conexao_bd import Base
 
 class Usuario(Base):
@@ -45,3 +45,13 @@ class MetaGastos(Base):
     categoria = Column('categoria', String, nullable=False)
     data_mes = Column('data_mes', String, nullable=False)
     id_usuario = Column('id_usuario', ForeignKey('usuario.id'))
+    
+    __table_args__ = (
+        UniqueConstraint('id_usuario', 'categoria', 'data_mes', name='uix_usuario_categoria_mes'),
+    )
+    
+    def __init__(self, valor, categoria, data_mes, id_usuario):
+        self.valor = valor
+        self.categoria = categoria
+        self.data_mes = data_mes
+        self.id_usuario = id_usuario
